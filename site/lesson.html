@@ -8,8 +8,8 @@
   <meta name="description" content="AI Engineering from Scratch - Lesson Viewer">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Patrick+Hand&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=20260424a">
   <style>
     .scroll-progress {
       position: fixed;
@@ -714,6 +714,125 @@
       justify-content: center;
     }
 
+    .mermaid-block {
+      width: 100%;
+      max-width: 100%;
+    }
+
+    .mermaid-toolbar {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .mermaid-btn {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      padding: 5px 10px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      background: var(--bg-surface);
+      cursor: pointer;
+      transition: border-color 0.15s ease, color 0.15s ease, transform 0.1s ease;
+    }
+
+    .mermaid-btn:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .mermaid-btn:active {
+      transform: scale(0.98);
+    }
+
+    .mermaid-render {
+      width: 100%;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .mermaid-source {
+      display: none;
+    }
+
+    .mermaid-modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: var(--overlay-bg);
+      backdrop-filter: blur(6px);
+      -webkit-backdrop-filter: blur(6px);
+      z-index: 99999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    .mermaid-modal-overlay.open {
+      display: flex;
+    }
+
+    .mermaid-modal {
+      width: min(1100px, 96vw);
+      height: min(760px, 88vh);
+      background: var(--modal-bg);
+      border: 2px solid var(--border);
+      border-radius: 18px;
+      box-shadow: var(--shadow-hard-lg);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .mermaid-modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--border);
+      background: var(--bg-surface);
+    }
+
+    .mermaid-modal-title {
+      font-family: var(--font-heading);
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--text);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .mermaid-modal-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    .mermaid-modal-body {
+      flex: 1;
+      overflow: auto;
+      padding: 18px;
+      background: var(--bg);
+    }
+
+    .mermaid-modal-center {
+      min-height: 100%;
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .mermaid-modal-body svg {
+      max-width: none;
+      height: auto;
+    }
+
     .lesson-article .mermaid-container pre {
       overflow: visible;
       background: none;
@@ -1350,26 +1469,14 @@
       gap: 16px;
     }
 
-    .continue-big-btn {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
+    .phase-finished {
       font-family: var(--font-heading);
-      font-size: 1.3rem;
-      font-weight: 700;
+      font-size: 1.05rem;
+      font-weight: 600;
       color: #fff;
-      background: var(--accent);
-      padding: 16px 40px;
-      border-radius: 255px 15px 225px 15px / 15px 225px 15px 255px;
-      text-decoration: none;
-      border: 2px solid var(--accent);
-      box-shadow: var(--shadow-hard-lg);
-      transition: transform 0.2s, box-shadow 0.2s;
-    }
-
-    .continue-big-btn:hover {
-      transform: translate(-3px, -3px);
-      box-shadow: 8px 8px 0 var(--shadow-color);
+      background: var(--complete);
+      padding: 10px 20px;
+      border-radius: 8px;
     }
 
     .continue-links {
@@ -1452,10 +1559,6 @@
         width: 20px;
       }
 
-      .continue-big-btn {
-        font-size: 1.1rem;
-        padding: 14px 28px;
-      }
     }
 
     @media (max-width: 768px) {
@@ -1547,11 +1650,6 @@
         padding: 16px 8px;
       }
 
-      .continue-big-btn {
-        font-size: 1rem;
-        padding: 12px 20px;
-      }
-
       .continue-links {
         gap: 8px;
       }
@@ -1617,8 +1715,13 @@
       <nav class="header-nav">
         <a href="index.html#phases">Phases</a>
         <a href="catalog.html">Catalog</a>
+        <a href="prereqs.html">Roadmap</a>
         <a href="glossary.html">Glossary</a>
-        <a href="https://github.com/rohitg00/ai-engineering-from-scratch" target="_blank" rel="noopener">GitHub</a>
+        <a href="https://github.com/rohitg00/ai-engineering-from-scratch" target="_blank" rel="noopener" class="header-github">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.4 3-.405 1.02.005 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/></svg>
+          <svg class="star-icon" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .587l3.668 7.568 8.332 1.151-6.064 5.828 1.48 8.279L12 19.896l-7.416 3.517 1.48-8.279L0 9.306l8.332-1.151z"/></svg>
+          <span class="star-count" data-loading="true" aria-label="GitHub stars">…</span>
+        </a>
       </nav>
       <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
         <span class="theme-icon" id="themeIcon">&#9789;</span>
@@ -1627,6 +1730,18 @@
   </header>
 
   <button class="lesson-sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">&#9776;</button>
+
+  <div class="mermaid-modal-overlay" id="mermaidModalOverlay" aria-hidden="true">
+    <div class="mermaid-modal" role="dialog" aria-modal="true" aria-label="Expanded diagram">
+      <div class="mermaid-modal-header">
+        <div class="mermaid-modal-title" id="mermaidModalTitle">Diagram</div>
+        <div class="mermaid-modal-actions">
+          <button class="mermaid-btn" type="button" id="mermaidModalClose">Close</button>
+        </div>
+      </div>
+      <div class="mermaid-modal-body" id="mermaidModalBody"><div class="mermaid-modal-center" id="mermaidModalCenter"></div></div>
+    </div>
+  </div>
 
   <div class="lesson-layout">
     <aside class="lesson-sidebar" id="lessonSidebar"></aside>
@@ -1640,7 +1755,9 @@
     </main>
   </div>
 
-  <script src="data.js"></script>
+  <script src="data.js?v=20260424a"></script>
+  <script src="progress.js?v=20260424a"></script>
+  <script src="header.js?v=20260424a" defer></script>
   <script type="module">
     import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
     mermaid.initialize({
@@ -1676,6 +1793,7 @@
           root.setAttribute('data-theme', next);
           localStorage.setItem('theme', next);
           updateThemeIcon();
+          updateMermaidThemeAndRerender();
         });
       }
 
@@ -1685,6 +1803,10 @@
       if (!lessonPath) {
         showError('No lesson path specified', 'Add ?path=phases/01-math-foundations/01-linear-algebra-intuition to the URL.');
         return;
+      }
+
+      if (window.AIFSProgress) {
+        window.AIFSProgress.recordVisit(lessonPath);
       }
 
       var phaseMatch = lessonPath.match(/phases\/(\d+-[^/]+)/);
@@ -1977,7 +2099,15 @@
               var raw = codeLines.join('\n');
               if (codeLang === 'mermaid') {
                 mermaidBlocks++;
-                out += '<div class="mermaid-container"><pre class="mermaid" id="mermaid-' + mermaidBlocks + '">' + escapeHtml(raw) + '</pre></div>';
+                out += '<div class="mermaid-container">';
+                out += '<div class="mermaid-block" data-mermaid-index="' + mermaidBlocks + '">';
+                out += '<div class="mermaid-toolbar">';
+                out += '<button type="button" class="mermaid-btn mermaid-expand" data-mermaid-index="' + mermaidBlocks + '">Expand</button>';
+                out += '</div>';
+                out += '<pre class="mermaid mermaid-source" id="mermaid-' + mermaidBlocks + '">' + escapeHtml(raw) + '</pre>';
+                out += '<div class="mermaid-render" id="mermaid-render-' + mermaidBlocks + '"></div>';
+                out += '</div>';
+                out += '</div>';
               } else {
                 out += renderCodeBlock(raw, codeLang);
               }
@@ -2226,18 +2356,175 @@
         var check = setInterval(function () {
           if (!window._mermaidReady) return;
           clearInterval(check);
-          var blocks = document.querySelectorAll('.mermaid');
-          blocks.forEach(function (block) {
-            var id = block.id;
-            var def = block.textContent;
-            window._mermaidReady.render(id + '-svg', def).then(function (result) {
-              block.innerHTML = result.svg;
-            }).catch(function () {
-              block.innerHTML = '<p style="color:var(--text-muted);font-style:italic;">Diagram could not be rendered.</p>';
-            });
-          });
+          rerenderMermaidBlocks();
+          bindMermaidToolbar();
+          initMermaidModal();
         }, 100);
         setTimeout(function () { clearInterval(check); }, 10000);
+      }
+
+      function mermaidTheme() {
+        return document.documentElement.getAttribute('data-theme') === 'light' ? 'default' : 'dark';
+      }
+
+      function updateMermaidThemeAndRerender() {
+        if (!window._mermaidReady) return;
+        try {
+          window._mermaidReady.initialize({ startOnLoad: false, theme: mermaidTheme(), fontFamily: 'Patrick Hand, cursive' });
+        } catch (_) {}
+        rerenderMermaidBlocks();
+        rerenderMermaidModal();
+      }
+
+      function rerenderMermaidBlocks() {
+        if (!window._mermaidReady) return;
+        var sources = document.querySelectorAll('pre.mermaid.mermaid-source');
+        sources.forEach(function (pre) {
+          var idxMatch = pre.id && pre.id.match(/mermaid-(\d+)/);
+          var idx = idxMatch ? idxMatch[1] : null;
+          if (!idx) return;
+          var target = document.getElementById('mermaid-render-' + idx);
+          if (!target) return;
+          var def = pre.textContent;
+          target.innerHTML = '<div class="panel-loading">Rendering diagram...</div>';
+
+          var token = ++mermaidRenderSeq;
+          target._mermaidRenderToken = token;
+
+          window._mermaidReady.render('mermaid-' + idx + '-svg', def).then(function (result) {
+            if (target._mermaidRenderToken !== token) return;
+            target.innerHTML = result.svg;
+          }).catch(function () {
+            if (target._mermaidRenderToken !== token) return;
+            target.innerHTML = '<p style="color:var(--text-muted);font-style:italic;">Diagram could not be rendered.</p>';
+          });
+        });
+      }
+
+      function bindMermaidToolbar() {
+        document.querySelectorAll('.mermaid-expand').forEach(function (btn) {
+          if (btn._bound) return;
+          btn._bound = true;
+          btn.addEventListener('click', function () {
+            var idx = btn.getAttribute('data-mermaid-index');
+            openMermaidModal(idx, btn);
+          });
+        });
+      }
+
+      function initMermaidModal() {
+        var overlay = document.getElementById('mermaidModalOverlay');
+        var closeBtn = document.getElementById('mermaidModalClose');
+        if (!overlay || !closeBtn) return;
+        if (overlay._bound) return;
+        overlay._bound = true;
+
+        closeBtn.addEventListener('click', closeMermaidModal);
+        overlay.addEventListener('click', function (e) {
+          if (e.target === overlay) closeMermaidModal();
+        });
+        document.addEventListener('keydown', function (e) {
+          if (!overlay.classList.contains('open')) return;
+          if (e.key === 'Escape') {
+            e.preventDefault();
+            closeMermaidModal();
+            return;
+          }
+
+          if (e.key === 'Tab') {
+            var focusables = getMermaidModalFocusables();
+            if (!focusables.length) return;
+            var first = focusables[0];
+            var last = focusables[focusables.length - 1];
+            var active = document.activeElement;
+
+            if (e.shiftKey) {
+              if (active === first || active === overlay) {
+                e.preventDefault();
+                last.focus();
+              }
+            } else {
+              if (active === last) {
+                e.preventDefault();
+                first.focus();
+              }
+            }
+          }
+        });
+      }
+
+      var lastMermaidTrigger = null;
+      var openMermaidIndex = null;
+      var mermaidRenderSeq = 0;
+
+      function getMermaidModalFocusables() {
+        var modal = document.querySelector('#mermaidModalOverlay .mermaid-modal');
+        if (!modal) return [];
+        return Array.prototype.slice.call(modal.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'))
+          .filter(function (el) { return !el.disabled && el.offsetParent !== null; });
+      }
+
+      function openMermaidModal(idx, triggerEl) {
+        var overlay = document.getElementById('mermaidModalOverlay');
+        var body = document.getElementById('mermaidModalBody');
+        var center = document.getElementById('mermaidModalCenter');
+        var title = document.getElementById('mermaidModalTitle');
+        var closeBtn = document.getElementById('mermaidModalClose');
+        var pre = document.getElementById('mermaid-' + idx);
+        if (!overlay || !body || !center || !pre || !closeBtn) return;
+
+        lastMermaidTrigger = triggerEl || document.activeElement;
+        openMermaidIndex = idx;
+
+        if (title) title.textContent = 'Diagram';
+
+        overlay.classList.add('open');
+        overlay.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+
+        closeBtn.focus();
+
+        rerenderMermaidModal();
+      }
+
+      function rerenderMermaidModal() {
+        var overlay = document.getElementById('mermaidModalOverlay');
+        var center = document.getElementById('mermaidModalCenter');
+        if (!overlay || !center) return;
+        if (!overlay.classList.contains('open')) return;
+        if (!openMermaidIndex) return;
+        if (!window._mermaidReady) return;
+
+        var pre = document.getElementById('mermaid-' + openMermaidIndex);
+        if (!pre) return;
+        var def = pre.textContent;
+
+        center.innerHTML = '<div class="panel-loading">Rendering diagram...</div>';
+        var token = ++mermaidRenderSeq;
+        center._mermaidRenderToken = token;
+
+        window._mermaidReady.render('mermaid-modal-svg', def).then(function (result) {
+          if (center._mermaidRenderToken !== token) return;
+          center.innerHTML = result.svg;
+        }).catch(function () {
+          if (center._mermaidRenderToken !== token) return;
+          center.innerHTML = '<p style="color:var(--text-muted);font-style:italic;">Diagram could not be rendered.</p>';
+        });
+      }
+
+      function closeMermaidModal() {
+        var overlay = document.getElementById('mermaidModalOverlay');
+        var center = document.getElementById('mermaidModalCenter');
+        if (!overlay) return;
+        overlay.classList.remove('open');
+        overlay.setAttribute('aria-hidden', 'true');
+        if (center) center.innerHTML = '';
+        document.body.style.overflow = '';
+        openMermaidIndex = null;
+
+        if (lastMermaidTrigger && typeof lastMermaidTrigger.focus === 'function') {
+          lastMermaidTrigger.focus();
+        }
       }
 
       function renderQuiz(data) {
@@ -2261,6 +2548,7 @@
           } else if (allHtml) {
             article.insertAdjacentHTML('beforeend', allHtml);
           }
+          restoreQuizAnswers();
           return;
         }
 
@@ -2275,6 +2563,8 @@
         } else if (postQuizHtml) {
           article.insertAdjacentHTML('beforeend', postQuizHtml);
         }
+
+        restoreQuizAnswers();
       }
 
       function buildQuizHtml(questions, id, title) {
@@ -2304,45 +2594,84 @@
         return html;
       }
 
-      function handleQuizClick(el) {
+      window.handleQuizClick = function (el) {
         var questionDiv = el.closest('.quiz-question');
         if (questionDiv.classList.contains('answered')) return;
+        applyQuizAnswer(questionDiv, parseInt(el.getAttribute('data-index')), true);
+      };
+
+      function applyQuizAnswer(questionDiv, chosen, persist) {
+        if (!questionDiv || isNaN(chosen)) return;
         questionDiv.classList.add('answered');
 
         var correct = parseInt(questionDiv.getAttribute('data-correct'));
-        var chosen = parseInt(el.getAttribute('data-index'));
         var options = questionDiv.querySelectorAll('.quiz-option');
 
         for (var i = 0; i < options.length; i++) {
           options[i].classList.add('disabled');
           if (i === correct) {
             options[i].classList.add('correct');
-            options[i].querySelector('.quiz-marker').textContent = '\u2713';
+            var mc = options[i].querySelector('.quiz-marker');
+            if (mc) mc.textContent = '\u2713';
           }
         }
         if (chosen !== correct) {
-          el.classList.add('incorrect');
-          el.querySelector('.quiz-marker').textContent = '\u2717';
+          var picked = questionDiv.querySelector('.quiz-option[data-index="' + chosen + '"]');
+          if (picked) {
+            picked.classList.add('incorrect');
+            var mp = picked.querySelector('.quiz-marker');
+            if (mp) mp.textContent = '\u2717';
+          }
         }
 
         var exp = questionDiv.querySelector('.quiz-explanation');
         if (exp) exp.style.display = 'block';
 
-        var section = questionDiv.closest('.quiz-section');
+        if (persist && window.AIFSProgress && lessonPath) {
+          window.AIFSProgress.recordAnswer(lessonPath, questionDiv.id, chosen, chosen === correct);
+        }
+
+        updateSectionScore(questionDiv.closest('.quiz-section'));
+        maybeMarkLessonComplete();
+      }
+
+      function updateSectionScore(section) {
+        if (!section) return;
         var allQs = section.querySelectorAll('.quiz-question');
         var answeredQs = section.querySelectorAll('.quiz-question.answered');
-        if (allQs.length === answeredQs.length) {
-          var correctCount = 0;
-          for (var j = 0; j < allQs.length; j++) {
-            var c = parseInt(allQs[j].getAttribute('data-correct'));
-            var picked = allQs[j].querySelector('.quiz-option.correct.disabled:not(.incorrect), .quiz-option[data-index="' + c + '"]');
-            var userPick = allQs[j].querySelector('.quiz-option.incorrect');
-            if (!userPick) correctCount++;
-          }
-          var scoreEl = section.querySelector('.quiz-score');
-          if (scoreEl) {
-            scoreEl.textContent = correctCount + '/' + allQs.length + ' correct';
-            scoreEl.style.display = 'block';
+        if (allQs.length !== answeredQs.length) return;
+        var correctCount = 0;
+        for (var j = 0; j < allQs.length; j++) {
+          if (!allQs[j].querySelector('.quiz-option.incorrect')) correctCount++;
+        }
+        var scoreEl = section.querySelector('.quiz-score');
+        if (scoreEl) {
+          scoreEl.textContent = correctCount + '/' + allQs.length + ' correct';
+          scoreEl.style.display = 'block';
+        }
+      }
+
+      function maybeMarkLessonComplete() {
+        if (!window.AIFSProgress || !lessonPath) return;
+        var sections = document.querySelectorAll('.quiz-section');
+        if (!sections.length) return;
+        for (var s = 0; s < sections.length; s++) {
+          var qs = sections[s].querySelectorAll('.quiz-question');
+          var answered = sections[s].querySelectorAll('.quiz-question.answered');
+          if (qs.length === 0 || qs.length !== answered.length) return;
+          if (sections[s].querySelector('.quiz-option.incorrect')) return;
+        }
+        window.AIFSProgress.markLessonComplete(lessonPath);
+      }
+
+      function restoreQuizAnswers() {
+        if (!window.AIFSProgress || !lessonPath) return;
+        var lp = window.AIFSProgress.getLessonProgress(lessonPath);
+        if (!lp || !lp.answers) return;
+        for (var qid in lp.answers) {
+          var q = document.getElementById(qid);
+          if (q && !q.classList.contains('answered')) {
+            applyQuizAnswer(q, lp.answers[qid].picked, false);
           }
         }
       }
@@ -2774,10 +3103,8 @@
         var html = '<div class="ai-panel-header"><div class="ai-panel-icon blue">\u{1F680}</div><div class="ai-panel-title">Continue Learning</div></div>';
         html += '<div class="continue-panel">';
 
-        if (next && next.path) {
-          html += '<a class="continue-big-btn" href="lesson.html?path=' + next.path + '">Next: ' + escapeHtml(next.lessonName) + ' \u2192</a>';
-        } else {
-          html += '<div class="continue-big-btn" style="background:var(--complete);border-color:var(--complete);">\u2705 You finished this phase!</div>';
+        if (!next || !next.path) {
+          html += '<div class="phase-finished">\u2705 You finished this phase!</div>';
         }
 
         html += '<div class="continue-links">';

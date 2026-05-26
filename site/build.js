@@ -63,19 +63,27 @@ function parseReadme(content, roadmapStatuses) {
   const lines = content.split('\n');
   let currentPhase = null;
   let inLessonTable = false;
+  let isCapstoneTable = false;
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
 
-    // Match Phase header - two formats:
-    // ### Phase 0: Setup & Tooling `12 lessons`
-    // <summary><strong>Phase 1: Math Foundations</strong> <code>22 lessons</code> ... <em>Description</em></summary>
-    const phaseHeaderMatch = line.match(/###\s+Phase\s+(\d+):\s+(.+?)\s*`(\d+)\s+lessons?`/);
-    const detailsHeaderMatch = line.match(/<summary><strong>Phase\s+(\d+):\s+(.+?)<\/strong>\s*<code>(\d+)\s+(?:lessons?|projects?)<\/code>.*?<em>(.*?)<\/em>/);
+    // Match Phase header - multiple formats supported:
+    // Old: ### Phase 0: Setup & Tooling `12 lessons`
+    // Old: <summary><strong>Phase 1: Math Foundations</strong> <code>22 lessons</code> ... <em>Description</em></summary>
+    // New: ### ![](https://img.shields.io/badge/Phase_0-Setup_&_Tooling-95A5A6?style=for-the-badge) `12 lessons`
+    // New: <summary><b>🟣 Phase 1 — Math Foundations</b> &nbsp;<code>22 lessons</code>&nbsp; <em>Description</em></summary>
+    const phaseHeaderMatch =
+      line.match(/###\s+Phase\s+(\d+):\s+(.+?)\s*`(\d+)\s+lessons?`/) ||
+      line.match(/###\s+!\[\]\([^)]*?Phase[_\s]+(\d+)[-_]([^?)]+?)-[A-F0-9]{6}[^)]*\)\s*`(\d+)\s+lessons?`/i);
+    const detailsHeaderMatch =
+      line.match(/<summary><strong>Phase\s+(\d+):\s+(.+?)<\/strong>\s*<code>(\d+)\s+(?:lessons?|projects?)<\/code>.*?<em>(.*?)<\/em>/) ||
+      line.match(/<summary>\s*<b>\s*(?:[^\w\s]+\s+)?Phase\s+(\d+)\s*[—\-:]\s*(.+?)<\/b>.*?<code>(\d+)\s+(?:lessons?|projects?)<\/code>.*?<em>(.*?)<\/em>/);
 
     if (phaseHeaderMatch) {
-      const [, idStr, name] = phaseHeaderMatch;
+      const [, idStr, rawName] = phaseHeaderMatch;
       const id = parseInt(idStr);
+      const name = rawName.replace(/_/g, ' ').trim();
       // Look for the description on the next line (blockquote)
       let desc = '';
       for (let j = i + 1; j < Math.min(i + 5, lines.length); j++) {
@@ -106,6 +114,7 @@ function parseReadme(content, roadmapStatuses) {
     // Detect start of lesson table
     if (currentPhase && line.match(/^\|\s*#\s*\|\s*Lesson/)) {
       inLessonTable = true;
+      isCapstoneTable = false;
       continue;
     }
 
@@ -121,8 +130,31 @@ function parseReadme(content, roadmapStatuses) {
       const cols = line.split('|').map(c => c.trim()).filter(c => c.length > 0);
       if (cols.length >= 4) {
         const lessonCol = cols[1];
-        const type = cols[2];
-        const lang = cols[3];
+        const typeRaw = cols[2];
+        const langRaw = cols[3];
+
+        // Type may be plain ("Build") or a shield image: ![Build](https://...)
+        const typeBadgeMatch = typeRaw.match(/!\[([^\]]+)\]/);
+        const type = typeBadgeMatch ? typeBadgeMatch[1] : typeRaw;
+
+        // Lang may be plain ("Python, Rust") or emoji flags (🐍 🟦 🦀 🟣 ⚛️)
+        const EMOJI_LANG = {
+          '🐍': 'Python',
+          '🟦': 'TypeScript',
+          '🦀': 'Rust',
+          '🟣': 'Julia',
+          '⚛️': 'React',
+          '⚛': 'React',
+        };
+        let lang = langRaw;
+        if (/[\uD800-\uDBFF\u2600-\u27BF\u1F300-\u1FAFF]/.test(langRaw) || /[🐍🟦🦀🟣⚛]/u.test(langRaw)) {
+          const tokens = Array.from(langRaw)
+            .map(ch => EMOJI_LANG[ch])
+            .filter(Boolean);
+          if (tokens.length) lang = [...new Set(tokens)].join(', ');
+          else if (langRaw.trim() === '—' || langRaw.trim() === '-') lang = '';
+        }
+        if (lang === '—' || lang === '-') lang = '';
 
         // Check if lesson has a link (meaning it has content)
         const linkMatch = lessonCol.match(/\[(.+?)\]\((.+?)\)/);
@@ -158,13 +190,19 @@ function parseReadme(content, roadmapStatuses) {
           status = 'complete';
         }
 
-        currentPhase.lessons.push({
+        // Capstone tables use the middle column for prerequisite phase tokens
+        // (e.g., "P11 P13 P14"), not a Build/Learn enum. Keep `type` on the
+        // Build/Learn axis so CSS selectors (data-type="Build"/"Learn") stay
+        // valid, and emit the prereq string in a dedicated `combines` field.
+        const lessonEntry = {
           name: lessonName.trim(),
           status,
-          type: type.trim(),
-          lang: lang.trim(),
-          ...(url && { url })
-        });
+          type: isCapstoneTable ? 'Capstone' : type.trim(),
+          lang: lang.trim() || '—',
+          ...(isCapstoneTable && { combines: type.trim() }),
+          ...(url && { url }),
+        };
+        currentPhase.lessons.push(lessonEntry);
       }
     }
 
@@ -176,6 +214,7 @@ function parseReadme(content, roadmapStatuses) {
     // Also detect capstone table format (# | Project | Combines | Lang)
     if (currentPhase && line.match(/^\|\s*#\s*\|\s*Project/)) {
       inLessonTable = true;
+      isCapstoneTable = true;
       continue;
     }
   }
